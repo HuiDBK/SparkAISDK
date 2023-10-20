@@ -21,11 +21,11 @@ def build_user_msg_context_list(content):
 
 
 async def main():
-    chat_conf = SparkChatConfig(domain="generalv2", temperature=0.5, max_tokens=2048, top_k=4)
+    chat_conf = SparkChatConfig(domain="generalv2", temperature=0.5, max_tokens=2048, top_k=3)
     spark_client = SparkClient(
-        app_id="b6a2712a",
-        api_secret="YTIyZWRmY2VhNTMxMmI0MmU1Yjg4Yzlm",
-        api_key="ace2912b6da3ca219d1b0875fa5e949f",
+        app_id="",
+        api_secret="",
+        api_key="",
         chat_conf=chat_conf
     )
 
@@ -34,7 +34,7 @@ async def main():
     msg_context_list = build_user_msg_context_list(content=ques)
     answer_full_content = ""
 
-    async for chat_resp in spark_client.aiohttp_chat(msg_context_list):
+    async for chat_resp in spark_client.achat(msg_context_list):
         chat_resp: SparkMsgInfo = chat_resp
         answer_full_content += chat_resp.msg_content
         print(chat_resp)

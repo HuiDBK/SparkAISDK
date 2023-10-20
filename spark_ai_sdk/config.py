@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # @Author: Hui
-# @Desc: { 模块描述 }
+# @Desc: { 配置模块 }
 # @Date: 2023/10/20 19:43
 import uuid
 from enum import Enum

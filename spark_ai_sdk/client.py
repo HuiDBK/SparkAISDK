@@ -1,19 +1,15 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # @Author: Hui
-# @Desc: { 讯飞星火大模型测试 }
+# @Desc: { 讯飞星火大模型客户端 }
 # @Date: 2023/10/19 14:56
-import asyncio
 import base64
 import hashlib
 import hmac
-import random
 import uuid
 import json
 from datetime import datetime
-from enum import Enum
 from time import mktime
-from typing import Optional
 from urllib.parse import urlparse, urlencode
 from wsgiref.handlers import format_date_time
 
@@ -41,6 +37,8 @@ class SparkClient:
         self.api_key = api_key
         self.chat_conf = chat_conf or SparkChatConfig()
         self.server_uri = self.SERVER_URI_MAPPING[self.chat_conf.domain]
+        self.answer_full_content = ""
+        self.memory_history_list = []
 
     def _build_header(self, uid=None):
         return {
@@ -84,6 +82,7 @@ class SparkClient:
 
         text_list = chat_resp["payload"]["choices"]["text"]
         answer_content = text_list[0]["content"]
+        self.answer_full_content += answer_content
         spark_msg_info = SparkMsgInfo()
 
         status = chat_resp["header"]["status"]
@@ -95,6 +94,8 @@ class SparkClient:
         if status == SparkMessageStatus.END_RET.value:
             usage_info = chat_resp["payload"]["usage"]["text"]
             spark_msg_info.usage_info = usage_info
+            spark_msg_info.msg_content = self.answer_full_content
+            self.answer_full_content = ""
 
         return spark_msg_info
 
