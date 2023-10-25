@@ -54,6 +54,7 @@ class SparkMsgInfo(BaseModel):
     msg_sid: str = Field(default=uuid.uuid4().hex, description="消息id，用于唯一标识⼀条消息")
     msg_type: str = Field(default="text", description="消息类型，目前仅支持text")
     msg_content: str = Field(default="", description="消息内容")
+    answer_full_content: Optional[str] = Field(default="", description="最后完整的消息内容")
     msg_status: SparkMessageStatus = Field(default=SparkMessageStatus.FIRST_RET, description="消息状态")
 
     usage_info: Optional[SparkChatUsageInfo] = Field(default=None, description="消息使用信息")

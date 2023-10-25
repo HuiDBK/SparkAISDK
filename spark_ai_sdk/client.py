@@ -23,6 +23,7 @@ class SparkClient:
     SERVER_URI_MAPPING = {
         "general": "ws://spark-api.xf-yun.com/v1.1/chat",
         "generalv2": "ws://spark-api.xf-yun.com/v2.1/chat",
+        "generalv3": "ws://spark-api.xf-yun.com/v3.1/chat",
     }
 
     def __init__(
@@ -39,6 +40,10 @@ class SparkClient:
         self.server_uri = self.SERVER_URI_MAPPING[self.chat_conf.domain]
         self.answer_full_content = ""
         self.memory_history_list = []
+        self.http_client = aiohttp.ClientSession()
+
+    async def close(self):
+        await self.http_client.close()
 
     def _build_header(self, uid=None):
         return {
@@ -94,7 +99,7 @@ class SparkClient:
         if status == SparkMessageStatus.END_RET.value:
             usage_info = chat_resp["payload"]["usage"]["text"]
             spark_msg_info.usage_info = usage_info
-            spark_msg_info.msg_content = self.answer_full_content
+            spark_msg_info.answer_full_content = self.answer_full_content
             self.answer_full_content = ""
 
         return spark_msg_info
@@ -133,16 +138,15 @@ class SparkClient:
         sign_url = self.server_uri + '?' + urlencode(v)
         return sign_url
 
-    async def aiohttp_chat(self, msg_context_list: list, uid: str = None):
+    async def aio_chat(self, msg_context_list: list, uid: str = None):
         chat_params = self.build_chat_params(msg_context_list, uid)
         sign_url = self.get_sign_url()
 
-        async with aiohttp.ClientSession() as session:
-            async with session.ws_connect(sign_url) as ws:
-                await ws.send_str(chat_params)
-                async for chat_resp in ws:
-                    spark_msg_info = self._parse_chat_response(chat_resp.data)
-                    yield spark_msg_info
+        async with self.http_client.ws_connect(sign_url) as ws:
+            await ws.send_str(chat_params)
+            async for chat_resp in ws:
+                spark_msg_info = self._parse_chat_response(chat_resp.data)
+                yield spark_msg_info
 
     async def achat(self, msg_context_list: list, uid: str = None):
         chat_params = self.build_chat_params(msg_context_list, uid)
